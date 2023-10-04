@@ -33,11 +33,8 @@ navigator.mediaDevices
       call.on("stream", (userVideoStream) => {
         addVideoStream(video, userVideoStream, call.metadata.username);
       });
-      call.on("close", () => {
-        console.log("PEER CLOSED");
-        video.remove();
-      });
-      peers[call.peer] = call;
+      call.on("close", () => peerClosed(video));
+      addPeer(call.peer, call);
     });
 
     //connect to the user when they join the room
@@ -49,7 +46,7 @@ navigator.mediaDevices
 
 socket.on("user-disconnected", (peerId, userName) => {
   if (peers[peerId]) peers[peerId].close();
-  console.log(userId + " disconnected.");
+  console.log(userName + " disconnected.");
 });
 function connectToNewUser(peerId, userName, stream) {
   //connect to the user, and show their video
@@ -61,11 +58,8 @@ function connectToNewUser(peerId, userName, stream) {
   call.on("stream", (userVideoStream) => {
     addVideoStream(video, userVideoStream, userName);
   });
-  call.on("close", () => {
-    console.log("PEER CLOSED");
-    video.remove();
-  });
-  peers[peerId] = call;
+  call.on("close", () => peerClosed(video));
+  addPeer(peerId, call);
 }
 const addVideoStream = (video, stream, userName) => {
   const videoWindow = document.createElement("div");
@@ -78,4 +72,12 @@ const addVideoStream = (video, stream, userName) => {
     video.play();
   });
   videoContainer.append(videoWindow);
+};
+
+const peerClosed = (video) => {
+  video.parentNode.remove();
+};
+
+const addPeer = (peerId, call) => {
+  peers[peerId] = call;
 };
