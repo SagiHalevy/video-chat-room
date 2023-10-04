@@ -6,7 +6,7 @@ function setPeer() {
     port: "3030",
   });
   myPeer.on("open", (id) => {
-    socket.emit("join-room", ROOM_ID, id);
+    socket.emit("join-room", ROOM_ID, id, USER_NAME);
   });
   return myPeer;
 }
@@ -22,7 +22,7 @@ navigator.mediaDevices
     //audio: true,
   })
   .then((stream) => {
-    addVideoStream(myVideo, stream); //show my video
+    addVideoStream(myVideo, stream, USER_NAME); //show my video
     //send my video and show remote's video when they call
 
     myPeer = setPeer();
@@ -31,7 +31,7 @@ navigator.mediaDevices
       call.answer(stream);
       const video = document.createElement("video");
       call.on("stream", (userVideoStream) => {
-        addVideoStream(video, userVideoStream);
+        addVideoStream(video, userVideoStream, call.metadata.username);
       });
       call.on("close", () => {
         console.log("PEER CLOSED");
@@ -41,34 +41,41 @@ navigator.mediaDevices
     });
 
     //connect to the user when they join the room
-    socket.on("user-connected", (userId) => {
-      console.log("user joined the room", userId);
-      connectToNewUser(userId, stream);
+    socket.on("user-connected", (userName, peerId) => {
+      console.log(userName, "joined the room.");
+      connectToNewUser(peerId, userName, stream);
     });
   });
 
-socket.on("user-disconnected", (userId) => {
-  if (peers[userId]) peers[userId].close();
-  console.log(userId + " dced");
+socket.on("user-disconnected", (peerId, userName) => {
+  if (peers[peerId]) peers[peerId].close();
+  console.log(userId + " disconnected.");
 });
-function connectToNewUser(userId, stream) {
+function connectToNewUser(peerId, userName, stream) {
   //connect to the user, and show their video
-  const call = myPeer.call(userId, stream);
+  const call = myPeer.call(peerId, stream, {
+    metadata: { username: USER_NAME },
+  });
 
   const video = document.createElement("video");
   call.on("stream", (userVideoStream) => {
-    addVideoStream(video, userVideoStream);
+    addVideoStream(video, userVideoStream, userName);
   });
   call.on("close", () => {
     console.log("PEER CLOSED");
     video.remove();
   });
-  peers[userId] = call;
+  peers[peerId] = call;
 }
-const addVideoStream = (video, stream) => {
+const addVideoStream = (video, stream, userName) => {
+  const videoWindow = document.createElement("div");
+  const videoTitle = document.createElement("h2");
+  videoTitle.textContent = userName;
+  videoWindow.append(videoTitle);
+  videoWindow.append(video);
   video.srcObject = stream;
   video.addEventListener("loadedmetadata", () => {
     video.play();
   });
-  videoContainer.append(video);
+  videoContainer.append(videoWindow);
 };

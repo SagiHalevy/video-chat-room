@@ -9,10 +9,12 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
       const ROOM_ID = "<%= roomId %>";
+      const USER_NAME = "<%= name %>";
     </script>
   </head>
   <body>
     The room is: <%= roomId %>
+
     <div id="video-container"></div>
     <button id="button">Click me</button>
   </body>

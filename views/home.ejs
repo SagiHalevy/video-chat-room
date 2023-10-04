@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <style>
+      /* Center-align content */
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      /* Add some basic CSS to style the form */
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      label {
+        display: block;
+        font-weight: bold;
+      }
+      input[type="text"] {
+        width: 250px; /* Reduce the width of the input box */
+        padding: 8px;
+        margin-bottom: 10px;
+      }
+      button {
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Welcome to the Home Page</h1>
+
+    <form action="/create-room" method="POST">
+      <label for="name">Your Name:</label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        placeholder="Enter your name"
+        required
+      />
+      <button type="submit">Create Your Own Room</button>
+    </form>
+
+    <div>
+      <form action="/join-room" method="POST">
+        <label for="room_id">Enter Room ID:</label>
+        <input
+          type="text"
+          id="room_id"
+          name="room_id"
+          placeholder="Enter room ID"
+          required
+        />
+        <label for="name">Your Name:</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Enter your name"
+          required
+        />
+        <button type="submit">Join Room</button>
+      </form>
+    </div>
+
+    <!-- Content for the home page -->
+  </body>
+</html>
