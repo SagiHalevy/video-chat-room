@@ -13,13 +13,19 @@ function setPeer() {
 
 const myVideo = document.createElement("video");
 const videoContainer = document.getElementById("video-container");
+
+const allMessageContainer = document.getElementById("all-messages");
+const messageForm = document.getElementById("send-container");
+const messageInput = document.getElementById("message-input");
+
 myVideo.muted = true;
+myVideo.classList.add("self-video");
 const peers = {};
 
 navigator.mediaDevices
   .getUserMedia({
     video: true,
-    //audio: true,
+    audio: false,
   })
   .then((stream) => {
     addVideoStream(myVideo, stream, USER_NAME); //show my video
@@ -42,8 +48,15 @@ navigator.mediaDevices
       console.log(userName, "joined the room.");
       connectToNewUser(peerId, userName, stream);
     });
+    //show chat messages
+    socket.on("chat-message", (message, userName) => {
+      const messageElement = document.createElement("div");
+      messageElement.classList.add("message");
+      messageElement.innerText = `${userName}: ${message}`;
+      allMessageContainer.append(messageElement);
+      allMessageContainer.scrollTop = allMessageContainer.scrollHeight; //scroll down when new message arrives
+    });
   });
-
 socket.on("user-disconnected", (peerId, userName) => {
   if (peers[peerId]) peers[peerId].close();
   console.log(userName + " disconnected.");
@@ -64,6 +77,8 @@ function connectToNewUser(peerId, userName, stream) {
 const addVideoStream = (video, stream, userName) => {
   const videoWindow = document.createElement("div");
   const videoTitle = document.createElement("h2");
+  videoTitle.classList.add("video-title");
+  videoWindow.classList.add("video-window");
   videoTitle.textContent = userName;
   videoWindow.append(videoTitle);
   videoWindow.append(video);
@@ -81,3 +96,11 @@ const peerClosed = (video) => {
 const addPeer = (peerId, call) => {
   peers[peerId] = call;
 };
+
+messageForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const message = messageInput.value;
+  socket.emit("send-chat-message", message);
+  messageInput.value = "";
+  messageInput.focus();
+});

@@ -7,9 +7,12 @@ const io = require("socket.io")(server);
 // Set up express-session middleware
 app.use(
   session({
-    secret: "your-secret-key",
+    secret: "your-secret-key", //should be changed
     resave: false, // Prevents session from being saved on every request
     saveUninitialized: true, // Forces a session to be created for new users
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // 24 hours
+    },
   })
 );
 
@@ -36,6 +39,13 @@ io.on("connection", (socket) => {
 
     socket.on("disconnect", () => {
       socket.to(roomId).emit("user-disconnected", peerId, userName);
+    });
+
+    socket.on("send-chat-message", (message) => {
+      // Emit the message to the sender
+      socket.emit("chat-message", message, userName);
+      // Emit the message to all clients in the room except the sender
+      socket.to(roomId).emit("chat-message", message, userName);
     });
   });
 });
