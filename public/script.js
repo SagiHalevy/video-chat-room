@@ -12,14 +12,14 @@ function setPeer() {
 }
 
 const myVideo = document.createElement("video");
-const videoContainer = document.getElementById("video-container");
+myVideo.muted = true;
+myVideo.classList.add("self-video");
 
+const videoContainer = document.getElementById("video-container");
 const allMessageContainer = document.getElementById("all-messages");
 const messageForm = document.getElementById("send-container");
 const messageInput = document.getElementById("message-input");
 
-myVideo.muted = true;
-myVideo.classList.add("self-video");
 const peers = {};
 
 navigator.mediaDevices
@@ -29,8 +29,8 @@ navigator.mediaDevices
   })
   .then((stream) => {
     addVideoStream(myVideo, stream, USER_NAME); //show my video
-    //send my video and show remote's video when they call
 
+    //send user video and show remote's video when they call
     myPeer = setPeer();
 
     myPeer.on("call", (call) => {
@@ -50,14 +50,7 @@ navigator.mediaDevices
     });
     //show chat messages
     socket.on("chat-message", (message, userName) => {
-      const messageElement = document.createElement("div");
-      messageElement.classList.add("message");
-      messageElement.innerText = `${userName}: ${message}`;
-      if (userName === USER_NAME) {
-        messageElement.classList.add("self-message");
-      }
-      allMessageContainer.append(messageElement);
-      allMessageContainer.scrollTop = allMessageContainer.scrollHeight; //scroll down when new message arrives
+      displayChatMessage(userName, message);
     });
   });
 socket.on("user-disconnected", (peerId, userName) => {
@@ -77,6 +70,19 @@ function connectToNewUser(peerId, userName, stream) {
   call.on("close", () => peerClosed(video));
   addPeer(peerId, call);
 }
+
+// Function to display chat messages
+function displayChatMessage(userName, message) {
+  const messageElement = document.createElement("div");
+  messageElement.classList.add("message");
+  messageElement.innerText = `${userName}: ${message}`;
+  if (userName === USER_NAME) {
+    messageElement.classList.add("self-message");
+  }
+  allMessageContainer.append(messageElement);
+  allMessageContainer.scrollTop = allMessageContainer.scrollHeight; // Scroll down when new message arrives
+}
+
 const addVideoStream = (video, stream, userName) => {
   const videoWindow = document.createElement("div");
   const videoTitle = document.createElement("h2");

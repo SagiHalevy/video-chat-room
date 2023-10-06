@@ -1,22 +1,28 @@
 const express = require("express");
 const session = require("express-session");
+const http = require("http");
+const socketIO = require("socket.io");
+
 const app = express();
-const server = require("http").Server(app);
-const io = require("socket.io")(server);
+const server = http.Server(app);
+const io = socketIO(server);
 
-// Set the maximum number of messages to retain
+// Constants
 const MAX_MESSAGES_COUNT = 100;
+const SESSION_SECRET = "your-secret-key";
+const COOKIE_MAX_AGE = 1000 * 60 * 60 * 24; // 24 hours
 
+// Room messages storage
 const roomMessages = {};
 
-// Set up express-session middleware
+// Express middleware setup
 app.use(
   session({
-    secret: "your-secret-key", //should be changed
-    resave: false, // Prevents session from being saved on every request
-    saveUninitialized: true, // Forces a session to be created for new users
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // 24 hours
+      maxAge: COOKIE_MAX_AGE,
     },
   })
 );
@@ -24,7 +30,6 @@ app.use(
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
-
 app.use("/", require("./routes/homeRoutes"));
 
 io.on("connection", (socket) => {
@@ -43,9 +48,7 @@ io.on("connection", (socket) => {
 
     socket.on("send-chat-message", (message) => {
       // Save the message to the room's chat history
-      if (!roomMessages[roomId]) {
-        roomMessages[roomId] = [];
-      }
+      roomMessages[roomId] = roomMessages[roomId] || [];
       roomMessages[roomId].push({ message, userName });
 
       // Limit the number of messages to the specified maximum
@@ -53,10 +56,8 @@ io.on("connection", (socket) => {
         roomMessages[roomId].shift(); // Remove the oldest message
       }
 
-      // Emit the message to the sender
-      socket.emit("chat-message", message, userName);
-      // Emit the message to all clients in the room except the sender
-      socket.to(roomId).emit("chat-message", message, userName);
+      // Emit the message to the sender and all clients in the room
+      io.to(roomId).emit("chat-message", message, userName);
     });
 
     socket.on("disconnect", () => {
@@ -74,4 +75,8 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(8080);
+// Server listen
+const PORT = 8080;
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
