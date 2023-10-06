@@ -53,6 +53,9 @@ navigator.mediaDevices
       const messageElement = document.createElement("div");
       messageElement.classList.add("message");
       messageElement.innerText = `${userName}: ${message}`;
+      if (userName === USER_NAME) {
+        messageElement.classList.add("self-message");
+      }
       allMessageContainer.append(messageElement);
       allMessageContainer.scrollTop = allMessageContainer.scrollHeight; //scroll down when new message arrives
     });
@@ -98,9 +101,12 @@ const addPeer = (peerId, call) => {
 };
 
 messageForm.addEventListener("submit", (e) => {
-  e.preventDefault();
+  e.preventDefault(); //stop from sending a post request to server
   const message = messageInput.value;
-  socket.emit("send-chat-message", message);
-  messageInput.value = "";
-  messageInput.focus();
+  //send only if message is not empty
+  if (message) {
+    socket.emit("send-chat-message", message);
+    messageInput.value = "";
+    messageInput.focus();
+  }
 });

@@ -40,6 +40,13 @@ video {
   border: 1px solid #000000;
 }
 
+.self-message {
+  border: 1px solid #439960;
+  background-color: #439960;
+  color: #ffffff;
+  margin-left: auto;
+}
+
 #send-container {
   background-color: #f0f0f0; /* Set the background color as needed */
   padding: 10px; /* Add some padding for spacing */

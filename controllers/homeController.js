@@ -14,7 +14,6 @@ const joinRoom = (req, res) => {
   res.redirect(`/${roomId}`);
 };
 const room = (req, res) => {
-  console.log("the session is id", req.session.id);
   res.render("room", { roomId: req.params.room, name: req.session.name });
 };
 
